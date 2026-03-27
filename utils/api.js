@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const clothesAPI = axios.create({
-  baseURL: "https://clothes-backend-8uyx.onrender.com/api",
+  baseURL: 'XXXXXXXXXXX:9090/api',  // Your working backend, put your ip address and then put 9090 on the end
 });
 
 export const getClothesList = () => {
