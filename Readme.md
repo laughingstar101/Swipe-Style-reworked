@@ -1,7 +1,10 @@
 # Swipe Style
 
 ## DISCLAIMER
-Hello Everyone, this is my first ever using GitHub and doing all sort of nerdy stuffs! I would like to thank all the original developers for creating this app, however my fork here is just to debug all the errors that I received while setting this up. The reason why I am doing this is that I am currently using this for my university project and needing to share between my fellow teammates, it took me 2 days to painfully debug all the problems which made me ragequitting haha. This is mostly just an early development build of what I am doing, and I am planning to add more new features soon.
+Hello Everyone, this is my first ever using GitHub and doing all sort of nerdy stuffs! I would like to thank all the original developers for creating this app, however my fork here is just to debug all the errors that I received while setting this up. The reason why I am doing this is that I am currently using this for my university project and needing to share between my fellow teammates, it took me 2 days to painfully debug all the problems which made me ragequitting haha. This is mostly just an early development build of what I am doing, and I am planning to add more new features soon. 
+
+
+The information below will help you to guide in installing this software in your own machine without going thru the trouble that I have went, so you are welcome!
 
 ## Introduction
 
