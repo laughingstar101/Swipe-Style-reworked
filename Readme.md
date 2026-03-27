@@ -1,5 +1,8 @@
 # Swipe Style
 
+## DISCLAIMER
+Hello Everyone, this is my first ever using GitHub and doing all sort of nerdy stuffs! I would like to thank all the original developers for creating this app, however my fork here is just to debug all the errors that I received while setting this up. The reason why I am doing this is that I am currently using this for my university project and needing to share between my fellow teammates, it took me 2 days to painfully debug all the problems which made me ragequitting haha. This is mostly just an early development build of what I am doing, and I am planning to add more new features soon.
+
 ## Introduction
 
 Welcome to Swipe Style, a mobile app inspired by Tinder that helps you discover new items based on your interests. With Swipe Style, you can easily find and favourite items that you like and get suggestions for similar items based on tags.
