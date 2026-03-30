@@ -1,7 +1,11 @@
 import axios from "axios";
 
 const clothesAPI = axios.create({
+<<<<<<< HEAD
   baseURL: 'http://192.168.100.4:9090/api',  // Your working backend
+=======
+  baseURL: 'XXXXXXXXXXX:9090/api',  // Your working backend, put your ip address and then put 9090 on the end
+>>>>>>> 737600c7e6a8ca12bef413e4984d35b12f5b7c01
 });
 
 export const getClothesList = () => {
