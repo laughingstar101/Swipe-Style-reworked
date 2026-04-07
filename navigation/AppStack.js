@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { StyleSheet } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import SwipePage from "../screens/SwipePage";
@@ -6,8 +6,8 @@ import FavouritesPage from "../screens/FavouritesPage";
 import BasketPage from "../screens/BasketPage";
 import SettingsPage from "../screens/SettingsPage";
 import Icon from "react-native-vector-icons/AntDesign";
-import { useContext } from "react";
 import { UserContext } from "../contexts/userContext";
+import { useTheme } from "../contexts/themeContext";
 import { getFavouritesByUserId, getUserBasket } from "../utils/api";
 
 export default function App() {
@@ -16,6 +16,7 @@ export default function App() {
   const [basket, setBasket] = useState([]);
 
   const { user } = useContext(UserContext);
+  const { theme } = useTheme();
 
   useEffect(() => {
     getFavouritesByUserId(user)
@@ -43,7 +44,14 @@ export default function App() {
   return (
     <Tab.Navigator
       style={styles.tab}
-      screenOptions={{ swipeEnabled: false, tabBarShowLabel: false }}
+      screenOptions={{
+        swipeEnabled: false,
+        tabBarShowLabel: false,
+        tabBarStyle: { backgroundColor: theme.cardBackground },
+        tabBarIndicatorStyle: { backgroundColor: theme.primary },
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textSecondary,
+      }}
     >
       <Tab.Screen
         name="Home"
