@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TextInput, ToastAndroid } from "react-native";
 import { Button } from "@react-native-material/core";
 import { getUser, patchUserPreferences } from "../utils/api";
 import { UserContext } from "../contexts/userContext";
+import { useTheme } from "../contexts/themeContext";
 import { colors } from "../utils/variables.js";
 
 const DeveloperSettings = () => {
@@ -23,6 +24,7 @@ const DeveloperSettings = () => {
 const EditTagFrequency = () => {
   const [topAndRandom, setTopAndRandom] = useState({});
   const { user } = useContext(UserContext);
+  const { theme } = useTheme();
   const [preferences, setPreferences] = useState({});
 
   useEffect(() => {
@@ -84,7 +86,7 @@ const EditTagFrequency = () => {
       {topAndRandomArray.map((key, index) => (
         <View key={index}>
           <View style={styles.rows}>
-            <Text>{key} top:</Text>
+            <Text style={[styles.labelText, { color: theme.text }]}>{key} top:</Text>
             <View style={styles.buttonContainer}>
               <Button
                 color={colors.darkgrey}
@@ -95,7 +97,7 @@ const EditTagFrequency = () => {
                 }
               />
               <TextInput
-                style={styles.text}
+                style={[styles.text, { color: theme.text }]}
                 value={" " + topAndRandom[key].n.toString() + " "}
                 onChangeText={(text) =>
                   handleTopAndRandomChange(key, "n", Number(text))
@@ -112,7 +114,7 @@ const EditTagFrequency = () => {
             </View>
           </View>
           <View style={styles.rows}>
-            <Text>{key} random:</Text>
+            <Text style={[styles.labelText, { color: theme.text }]}>{key} random:</Text>
             <View style={styles.buttonContainer}>
               <Button
                 color={colors.darkgrey}
@@ -123,6 +125,7 @@ const EditTagFrequency = () => {
                 }
               />
               <TextInput
+                style={[styles.text, { color: theme.text }]}
                 value={" " + topAndRandom[key].r.toString() + " "}
                 onChangeText={(text) =>
                   handleTopAndRandomChange(key, "r", Number(text))
@@ -171,5 +174,8 @@ const styles = StyleSheet.create({
   },
   margin: {
     margin: 10,
+  },
+  labelText: {
+    fontSize: 14,
   },
 });

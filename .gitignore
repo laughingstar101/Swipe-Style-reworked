@@ -18,3 +18,5 @@ web-build/
 .DS_Store
 .env
 utils/api.js
+.env
+utils/api.js

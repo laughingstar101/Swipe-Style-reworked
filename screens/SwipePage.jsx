@@ -34,6 +34,8 @@ const SwipePage = ({ setFavourites }) => {
   //this fetches the initial array of 10 items. user.uid needs passing in
   //this gets the user object from the api, the user object will be passed in here and the user.uid will be put in the getUser
   useEffect(() => {
+    if (!user) return;
+
     const fetchInitialSuggestedClothes = async () => {
       setIntialLoading(true);
       try {
@@ -62,7 +64,7 @@ const SwipePage = ({ setFavourites }) => {
 
     fetchInitialSuggestedClothes();
     fetchUserDataThenSetPreferences();
-  }, []);
+  }, [user]);
 
   //user.uid will need passing in to these functions
   useEffect(() => {
