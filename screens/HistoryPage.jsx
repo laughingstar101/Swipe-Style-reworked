@@ -1,7 +1,11 @@
 import React from "react";
-import { SafeAreaView, ScrollView, View, Text, Image, StyleSheet } from "react-native";
+import { SafeAreaView, ScrollView, View, Text, Image, StyleSheet, TouchableOpacity, ToastAndroid } from "react-native";
 import { useTheme } from "../contexts/themeContext";
-import { Button } from "@react-native-material/core";
+import AddToBasketButton from "../components/AddToBasketButton";
+import { postFavouritesByUserId } from "../utils/api";
+import { useContext } from "react";
+import { UserContext } from "../contexts/userContext";
+import Icon from "react-native-vector-icons/AntDesign";
 
 const resolveImageUri = (uri) => {
   if (!uri) return null;
@@ -9,14 +13,32 @@ const resolveImageUri = (uri) => {
   return `https://${uri}`;
 };
 
-const HistoryPage = ({ likedHistory = [], dislikedHistory = [] }) => {
+const HistoryPage = ({ likedHistory = [], dislikedHistory = [], basket, setBasket }) => {
   const { theme } = useTheme();
+  const { user } = useContext(UserContext);
+
+  const handleAddToFavourites = async (item) => {
+    const clothesId = item.clothes_id ?? item.item_id;
+    if (!clothesId) {
+      ToastAndroid.show("Unable to save favourite for this item.", ToastAndroid.SHORT);
+      return;
+    }
+
+    try {
+      await postFavouritesByUserId(user, clothesId);
+      ToastAndroid.show("Added to favourites!", ToastAndroid.SHORT);
+    } catch (error) {
+      console.log(error);
+      ToastAndroid.show("Could not add to favourites.", ToastAndroid.SHORT);
+    }
+  };
 
   const renderCard = (item, type) => {
     const imageUri = resolveImageUri(item.item_img_url);
+    const itemId = item.clothes_id ?? item.item_id;
 
     return (
-      <View key={`${type}-${item.clothes_id ?? item.item_id ?? Math.random()}`} style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}> 
+      <View key={`${type}-${itemId ?? Math.random()}`} style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}> 
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.cardImage} />
         ) : (
@@ -29,6 +51,17 @@ const HistoryPage = ({ likedHistory = [], dislikedHistory = [] }) => {
           <Text style={[styles.meta, { color: theme.textSecondary }]}>Price: {item.price}</Text>
           <Text style={[styles.meta, { color: theme.textSecondary }]}>{item.category?.toUpperCase() || "Unknown"}</Text>
           <Text style={[styles.badge, { backgroundColor: type === "liked" ? theme.liked : theme.disliked, color: theme.text }]}>{type === "liked" ? "Liked" : "Disliked"}</Text>
+
+          <View style={styles.actionsRow}>
+            <AddToBasketButton basket={basket} setBasket={setBasket} clothes={item} />
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: theme.primary }]}
+              onPress={() => handleAddToFavourites(item)}
+            >
+              <Icon name="heart" size={20} color={theme.text} />
+              <Text style={[styles.actionLabel, { color: theme.text }]}>Favourite</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -116,4 +149,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
   },
+  actionsRow: {
+    marginTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    minWidth: 120,
+  },
+  actionLabel: {
+    marginLeft: 8,
+    fontSize: 14,
+    fontWeight: "700",
+  }
 });

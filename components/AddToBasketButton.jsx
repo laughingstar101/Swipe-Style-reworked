@@ -7,9 +7,10 @@ import Icon from "react-native-vector-icons/Fontisto";
 import { colors } from "../utils/variables";
 
 const AddToBasketButton = ({ basket, setBasket, clothes }) => {
+  const clothesId = clothes.clothes_id ?? clothes.item_id;
   const currentBasket = [...basket];
   const existingClothes = currentBasket?.filter(
-    (x) => x.clothes_id === clothes.clothes_id
+    (x) => x.clothes_id === clothesId
   );
 
   const [isAddedToBasket, setIsAddedToBasket] = useState(
@@ -28,10 +29,10 @@ const AddToBasketButton = ({ basket, setBasket, clothes }) => {
   useEffect(() => {
     const currentUpdatedBasket = [...basket];
     const existingCurrentClothes = currentUpdatedBasket.filter(
-      (x) => x.clothes_id === clothes.clothes_id
+      (x) => x.clothes_id === clothesId
     );
 
-    setExistingClothesInBasket(existingCurrentClothes);
+    setExistingClothesInBasket(existingCurrentClothes[0]);
 
     if (existingCurrentClothes[0]) {
       setIsAddedToBasket(true);
@@ -43,7 +44,7 @@ const AddToBasketButton = ({ basket, setBasket, clothes }) => {
   const addNewClothesToBasket = () => {
     setIsAddedToBasket(true);
 
-    postClothesToBasket(user, { clothes_id: clothes.clothes_id })
+    postClothesToBasket(user, { clothes_id: clothesId })
       .then((clothesAddedToBasket) => {
         const { clothesBasket } = clothesAddedToBasket.data;
 
@@ -70,13 +71,17 @@ const AddToBasketButton = ({ basket, setBasket, clothes }) => {
   };
 
   const removeClothesFromBasket = () => {
-    deleteClothesFromBasket(existingClothesInBasket[0].basket_id)
+    if (!existingClothesInBasket?.basket_id) {
+      return;
+    }
+
+    deleteClothesFromBasket(existingClothesInBasket.basket_id)
       .then(() => {
         setIsAddedToBasket(false);
         setBasket((currentBasket) =>
           currentBasket.filter(
             (basket) =>
-              basket.basket_id !== existingClothesInBasket[0].basket_id
+              basket.basket_id !== existingClothesInBasket.basket_id
           )
         );
         showToast("Removed from basket!");

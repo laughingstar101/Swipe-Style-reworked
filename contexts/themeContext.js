@@ -16,6 +16,8 @@ export const themes = {
     grey: '#808080',
     liked: '#15eb02',
     disliked: '#dc3545',
+    tabIconActive: '#ff6b6b',
+    tabIconInactive: '#666666',
   },
   dark: {
     background: '#121212',
@@ -29,6 +31,8 @@ export const themes = {
     grey: '#a0a0a0',
     liked: '#15eb02',
     disliked: '#dc3545',
+    tabIconActive: '#ffffff',
+    tabIconInactive: '#aaaaaa',
   },
 };
 

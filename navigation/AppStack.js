@@ -60,8 +60,8 @@ export default function App() {
         tabBarShowLabel: false,
         tabBarStyle: { backgroundColor: theme.cardBackground },
         tabBarIndicatorStyle: { backgroundColor: theme.primary },
-        tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.textSecondary,
+        tabBarActiveTintColor: theme.tabIconActive,
+        tabBarInactiveTintColor: theme.tabIconInactive,
       }}
     >
       <Tab.Screen
@@ -75,7 +75,7 @@ export default function App() {
           />
         )}
         options={{
-          tabBarIcon: () => <Icon name="home" size={25} />,
+          tabBarIcon: ({ color }) => <Icon name="home" size={25} color={color} />,
         }}
       />
       <Tab.Screen
@@ -90,34 +90,36 @@ export default function App() {
           />
         )}
         options={{
-          tabBarIcon: () => <Icon name="hearto" size={24} />,
+          tabBarIcon: ({ color }) => <Icon name="hearto" size={24} color={color} />,
         }}
       />
       <Tab.Screen
         name="Basket"
         children={(props) => <BasketPage basket={basket} setBasket={setBasket} {...props} />}
         options={{
-          tabBarIcon: () => <Icon name="shoppingcart" size={25} />,
+          tabBarIcon: ({ color }) => <Icon name="shoppingcart" size={25} color={color} />,
         }}
       />
       <Tab.Screen
         name="Settings"
         component={SettingsPage}
         options={{
-          tabBarIcon: () => <Icon name="setting" size={25} />,
+          tabBarIcon: ({ color }) => <Icon name="setting" size={25} color={color} />,
         }}
       />
       <Tab.Screen
         name="History"
         children={(props) => (
           <HistoryPage
+            basket={basket}
+            setBasket={setBasket}
             likedHistory={likedHistory}
             dislikedHistory={dislikedHistory}
             {...props}
           />
         )}
         options={{
-          tabBarIcon: () => <Icon name="clockcircleo" size={23} />,
+          tabBarIcon: ({ color }) => <Icon name="clockcircleo" size={23} color={color} />,
         }}
       />
     </Tab.Navigator>
