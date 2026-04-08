@@ -17,7 +17,7 @@ import { useContext } from "react";
 import { UserContext } from "../contexts/userContext";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
 
-const SwipePage = ({ setFavourites }) => {
+const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) => {
   const { user } = useContext(UserContext);
   const swiperRef = createRef();
   const favAnimation = useRef(null);
@@ -207,8 +207,10 @@ const SwipePage = ({ setFavourites }) => {
     if (currentItem) {
       if (preference === 1) {
         addToPreferences(currentItem);
+        addToLikedHistory?.(currentItem);
       } else {
         removeFromPreferences(currentItem);
+        addToDislikedHistory?.(currentItem);
       }
     }
     setIndex((currentIndex) => currentIndex + 1);
