@@ -113,6 +113,8 @@ export default function App() {
           <HistoryPage
             basket={basket}
             setBasket={setBasket}
+            favourites={favourites}
+            setFavourites={setFavourites}
             likedHistory={likedHistory}
             dislikedHistory={dislikedHistory}
             {...props}

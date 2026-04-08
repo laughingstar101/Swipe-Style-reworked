@@ -13,7 +13,7 @@ const resolveImageUri = (uri) => {
   return `https://${uri}`;
 };
 
-const HistoryPage = ({ likedHistory = [], dislikedHistory = [], basket, setBasket }) => {
+const HistoryPage = ({ likedHistory = [], dislikedHistory = [], basket, setBasket, favourites, setFavourites }) => {
   const { theme } = useTheme();
   const { user } = useContext(UserContext);
 
@@ -25,7 +25,10 @@ const HistoryPage = ({ likedHistory = [], dislikedHistory = [], basket, setBaske
     }
 
     try {
-      await postFavouritesByUserId(user, clothesId);
+      const response = await postFavouritesByUserId(user, clothesId);
+      const { favourite } = response.data;
+      const newFavourite = { ...item, favourite_id: favourite.favourite_id };
+      setFavourites(prev => [newFavourite, ...prev]);
       ToastAndroid.show("Added to favourites!", ToastAndroid.SHORT);
     } catch (error) {
       console.log(error);
