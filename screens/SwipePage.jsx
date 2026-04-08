@@ -1,6 +1,7 @@
 import React, { useState, useRef, createRef, useEffect } from "react";
-import { StyleSheet, Text, View, Image } from "react-native";
+import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
+import { Ionicons } from '@expo/vector-icons';
 import data from "../data.js";
 import Swiper from "react-native-deck-swiper";
 import { IconButton } from "@react-native-material/core";
@@ -11,19 +12,17 @@ import {
   patchUserPreferences,
   getUser,
   postFavouritesByUserId,
-  getClothesList,
 } from "../utils/api.js";
 import { useContext } from "react";
 import { UserContext } from "../contexts/userContext";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
-import { useTheme } from "../contexts/themeContext";
 
-const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) => {
+const SwipePage = ({ setFavourites }) => {
   const { user } = useContext(UserContext);
-  const { theme } = useTheme();
   const swiperRef = createRef();
   const favAnimation = useRef(null);
   const [clothesData, setClothesData] = useState(data);
+  const [filteredClothes, setFilteredClothes] = useState(data);
   const [index, setIndex] = useState(1);
   const [tapCount, setTapCount] = useState(0);
   const [lastTime, setLastTime] = useState(0);
@@ -31,18 +30,34 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
   const [error, setError] = useState(null);
   const [isPressed, setIsPressed] = useState(false);
   const [intialLoading, setIntialLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Search filter function
+  useEffect(() => {
+    if (searchQuery === '') {
+      setFilteredClothes(clothesData);
+    } else {
+      const filtered = clothesData.filter(item =>
+        item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.style?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.color?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredClothes(filtered);
+      // Reset index when filtering to avoid out of bounds
+      setIndex(0);
+    }
+  }, [searchQuery, clothesData]);
 
   //this fetches the initial array of 10 items. user.uid needs passing in
-  //this gets the user object from the api, the user object will be passed in here and the user.uid will be put in the getUser
   useEffect(() => {
-    if (!user) return;
-
     const fetchInitialSuggestedClothes = async () => {
       setIntialLoading(true);
       try {
         const clothesFromAPI = await suggestedClothes(user);
-        console.log('API Response:', clothesFromAPI.data);
         setClothesData(clothesFromAPI.data.suggestedClothes);
+        setFilteredClothes(clothesFromAPI.data.suggestedClothes);
         setIntialLoading(false);
       } catch (err) {
         setError(err);
@@ -66,9 +81,9 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
 
     fetchInitialSuggestedClothes();
     fetchUserDataThenSetPreferences();
-  }, [user]);
+  }, []);
 
-  //user.uid will need passing in to these functions
+  // Rest of your existing useEffect remains the same
   useEffect(() => {
     const fetchSuggestedClothesAndConcat = async () => {
       try {
@@ -77,6 +92,7 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
           clothesFromAPI.data.suggestedClothes
         );
         setClothesData(newData);
+        setFilteredClothes(newData);
       } catch (err) {
         console.log(err);
       }
@@ -86,39 +102,29 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
       try {
         const data = JSON.stringify(preferences);
         const res = await patchUserPreferences(user, { preferences: data });
-        // console.log(res.data.user.preferences, "---- reply from server");
       } catch (err) {
         console.log(err);
       }
     };
 
-    //on every 10th index
     if (index % 10 === 0) {
       patchUserPreferencesUseEffect();
-      //every 10+5 index
     } else if (index % 10 !== 0 && index % 5 === 0) {
       fetchSuggestedClothesAndConcat();
     }
   }, [index]);
 
-  //this will add an item to user preferences
+  // Add to preferences function (your existing code)
   const addToPreferences = (item) => {
-    //create a copy of preferences object from state
     let newPreferences = Object.assign({}, preferences);
-
-    //init the object, make sure it has correct keys
     newPreferences.brand = newPreferences.brand || {};
     newPreferences.category = newPreferences.category || {};
     newPreferences.color = newPreferences.color || {};
     newPreferences.title = newPreferences.title || {};
 
-    //sometimes getting error, crashing program, item.brand = undefined, so i added if statements
     if (item.brand) {
-      //make everything lowercase
       let lowerCaseBrand = item.brand.toLowerCase();
       newPreferences.brand[lowerCaseBrand] =
-        //if it doesnt exist, create it and set it to 0, then increment by 1
-        //this means if it doesnt exist, it will be 1. if it exists it will be +=1
         (newPreferences.brand[lowerCaseBrand] || 0) + 1;
     }
     if (item.category) {
@@ -132,10 +138,9 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
         (newPreferences.color[lowerCaseColor] || 0) + 1;
     }
     if (item.title) {
-      //if the brand, color or category already exist in title, dont add them
-      let lowerCaseBrand = item.brand ? item.brand.toLowerCase() : "";
-      let lowerCaseColor = item.color ? item.color.toLowerCase() : "";
-      let lowerCaseCategory = item.category ? item.category.toLowerCase() : "";
+      let lowerCaseBrand = item.brand?.toLowerCase() || "";
+      let lowerCaseColor = item.color?.toLowerCase() || "";
+      let lowerCaseCategory = item.category?.toLowerCase() || "";
       let title = item.title
         .replace(lowerCaseBrand, "")
         .replace(lowerCaseColor, "")
@@ -151,7 +156,6 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
       });
     }
     setPreferences(newPreferences);
-    // console.log(preferences, "-----preferences");
   };
 
   const removeFromPreferences = (item) => {
@@ -204,7 +208,6 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
     setPreferences(newPreferences);
   };
 
-  // GESTURES
   const handleSwipeOnPress = (preference) => {
     preference === 1
       ? swiperRef.current.swipeRight()
@@ -213,16 +216,11 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
 
   const handleSwipe = (preference) => {
     console.log(index);
-    const currentCard = clothesData[index];
-
     if (preference === 1) {
-      addToPreferences(currentCard);
-      addToLikedHistory?.(currentCard);
+      addToPreferences(filteredClothes[index]);
     } else {
-      removeFromPreferences(currentCard);
-      addToDislikedHistory?.(currentCard);
+      removeFromPreferences(filteredClothes[index]);
     }
-
     setIndex((currentIndex) => currentIndex + 1);
   };
 
@@ -235,7 +233,7 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
     const myTime = new Date();
     const mySec = myTime.getTime();
     if (mySec - lastTime < 250) {
-      handleAddToFavorite(clothesData[index]);
+      handleAddToFavorite(filteredClothes[index]);
     }
     setLastTime(mySec);
   };
@@ -243,7 +241,7 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
   const handleAddToFavorite = async (card) => {
     console.log("double tap");
     setTapCount(2);
-    try {
+    try { 
       handleSwipeOnPress(1);
       setTimeout(() => {
         setTapCount(0);
@@ -267,11 +265,10 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
           setFavourites((currCards) => [newClothesAddedToFavourites, ...currCards]);
         })
     } catch (err) {
-      console.log(err);
+        console.log(err);
     }
   };
 
-  // animation of adding to Favourites
   useEffect(() => {
     if (tapCount === 2) {
       setIsPressed(true);
@@ -280,42 +277,40 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
     }
   }, [tapCount]);
 
-  // Card component with theme support
-  const resolveImageUri = (uri) => {
-    if (!uri) return null;
-    if (uri.startsWith("http://") || uri.startsWith("https://")) return uri;
-    return `https://${uri}`;
-  };
-
   const Card = ({ card }) => {
-    const imageUri = resolveImageUri(card.item_img_url);
-
     return (
-      <View style={[styles.card, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}>
-        {imageUri ? (
+      <View style={styles.card}>
+        {card.item_img_url ? (
           <Image
-            source={{ uri: imageUri }}
+            source={{ uri: `https://${card.item_img_url}` }}
             style={styles.cardImage}
           />
         ) : (
-          <Text style={[styles.cardTitle, { color: theme.text }]}>Error: Image URL is undefined</Text>
+          <Text style={styles.cardTitle}>Error: Image URL is undefined</Text>
         )}
-        <Text style={[styles.cardTitle, { color: theme.text }]}>{card.title}</Text>
+        <Text style={styles.cardTitle}>{card.title}</Text>
+        {/* Display search match info if searching */}
+        {searchQuery !== '' && (
+          <View style={styles.searchMatchBadge}>
+            <Text style={styles.searchMatchText}>
+              🔍 Matches your search
+            </Text>
+          </View>
+        )}
       </View>
     );
   };
 
-  // Buttons component with theme support
   const Buttons = () => {
     return (
       <View style={styles.icons}>
         <IconButton
           icon={(props) => <Icon name="back" {...props} />}
-          color={theme.textSecondary}
+          color={colors.darkgrey}
           size={30}
-          backgroundColor={theme.cardBackground}
+          backgroundColor={colors.white}
           borderWidth={1}
-          borderColor={theme.border}
+          borderColor={colors.border}
           onPress={() => handleSwipeBack()}
         />
         <Icon
@@ -334,10 +329,10 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
           icon={(props) => <Icon name="heart" {...props} />}
           color={colors.darkviolet}
           size={30}
-          backgroundColor={theme.cardBackground}
+          backgroundColor={colors.white}
           borderWidth={1}
-          borderColor={theme.border}
-          onPress={() => handleAddToFavorite(clothesData[index])}
+          borderColor={colors.border}
+          onPress={() => handleAddToFavorite(filteredClothes[index])}
         />
       </View>
     );
@@ -346,57 +341,88 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
   return intialLoading ? (
     <LoadingSpinner />
   ) : (
-    <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* DISPLAY ERROR  */}
+    <View style={styles.container}>
       {error && (
-        <Text style={[styles.errorText, { color: theme.textSecondary }]}>
+        <Text style={styles.errorText}>
           An error occurred trying to fetch the data. Put a button here, try
           again?
         </Text>
       )}
       {!error && (
         <>
+          {/* SEARCH BAR - ADDED HERE */}
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by title, brand, style, or category..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholderTextColor="#999"
+            />
+            {searchQuery !== '' && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Ionicons name="close-circle" size={20} color="#666" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* SHOW SEARCH RESULTS COUNT */}
+          {searchQuery !== '' && (
+            <Text style={styles.searchResultsText}>
+              Found {filteredClothes.length} item{filteredClothes.length !== 1 ? 's' : ''}
+            </Text>
+          )}
+
           <View style={styles.swiperView}>
-            {/* DISPLAY ADDING TO FAVOURITES ANIMATION */}
             <LottieView
               ref={favAnimation}
               style={[styles.heartLottie, !isPressed && { display: "none" }]}
               source={require("../assets/like-button.json")}
             />
-            <Swiper
-              ref={swiperRef}
-              cards={clothesData}
-              cardIndex={index}
-              renderCard={(card) => <Card card={card} />}
-              onSwipedRight={() => handleSwipe(1)}
-              onSwipedLeft={() => handleSwipe(-1)}
-              onTapCard={() => handleDoubleTap()}
-              stackSize={5}
-              stackSeparation={10}
-              infinite={false}
-              backgroundColor={theme.background}
-              verticalSwipe={false}
-              disableBottomSwipe
-              disableTopSwipe
-              style={styles.swiper}
-              animateCardOpacity
-              overlayLabels={{
-                left: {
-                  title: "NOPE",
-                  style: {
-                    label: styles.overlayLabelsLeftLabel,
-                    wrapper: styles.overlayLabelsLeftWrapper,
+            {filteredClothes.length > 0 ? (
+              <Swiper
+                ref={swiperRef}
+                cards={filteredClothes}
+                cardIndex={index}
+                renderCard={(card) => <Card card={card} />}
+                onSwipedRight={() => handleSwipe(1)}
+                onSwipedLeft={() => handleSwipe(-1)}
+                onTapCard={() => handleDoubleTap()}
+                stackSize={5}
+                stackSeparation={10}
+                infinite={false}
+                backgroundColor={colors.white}
+                verticalSwipe={false}
+                disableBottomSwipe
+                disableTopSwipe
+                style={styles.swiper}
+                animateCardOpacity
+                overlayLabels={{
+                  left: {
+                    title: "NOPE",
+                    style: {
+                      label: styles.overlayLabelsLeftLabel,
+                      wrapper: styles.overlayLabelsLeftWrapper,
+                    },
                   },
-                },
-                right: {
-                  title: "LIKE",
-                  style: {
-                    label: styles.overlayLabelsRightLabel,
-                    wrapper: styles.overlayLabelsRightWrapper,
+                  right: {
+                    title: "LIKE",
+                    style: {
+                      label: styles.overlayLabelsRightLabel,
+                      wrapper: styles.overlayLabelsRightWrapper,
+                    },
                   },
-                },
-              }}
-            />
+                }}
+              />
+            ) : (
+              <View style={styles.noResultsContainer}>
+                <Text style={styles.noResultsText}>No items match your search</Text>
+                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                  <Text style={styles.clearSearchText}>Clear search</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
           <Buttons />
         </>
@@ -409,13 +435,77 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: "relative",
+    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+  },
+  searchContainer: {
+    position: "absolute",
+    top: 50,
+    left: 15,
+    right: 15,
+    zIndex: 100,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 8,
+  },
+  searchResultsText: {
+    position: "absolute",
+    top: 110,
+    left: 15,
+    zIndex: 100,
+    fontSize: 12,
+    color: "#666",
+    backgroundColor: "#fff",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  searchMatchBadge: {
+    position: "absolute",
+    bottom: 20,
+    backgroundColor: "#7209b7",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  searchMatchText: {
+    color: "#fff",
+    fontSize: 12,
+  },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    height: 500,
+  },
+  noResultsText: {
+    fontSize: 18,
+    color: "#666",
+    textAlign: "center",
+  },
+  clearSearchText: {
+    marginTop: 10,
+    color: "#7209b7",
+    fontSize: 16,
   },
   swiperView: {
     position: "absolute",
     top: 0,
     left: 0,
+    right: 0,
+    bottom: 0,
   },
   swiper: {
     position: "relative",
@@ -446,16 +536,19 @@ const styles = StyleSheet.create({
     flex: 0.7,
     borderRadius: 20,
     justifyContent: "center",
+    backgroundColor: colors.white,
     paddingBottom: 25,
     alignItems: "center",
     borderWidth: 1,
     borderStyle: "solid",
+    borderColor: colors.border,
   },
   cardImage: {
     position: "relative",
     width: "100%",
     flex: 1,
     resizeMode: "cover",
+    backgroundColor: "#fff",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
@@ -465,6 +558,7 @@ const styles = StyleSheet.create({
     marginTop: 25,
     marginLeft: 5,
     marginRight: 5,
+    textAlign: "center",
   },
   icons: {
     width: "100%",
@@ -483,8 +577,9 @@ const styles = StyleSheet.create({
     pointerEvents: "box-none",
   },
   errorText: {
+    color: "red",
     textAlign: "center",
-    fontSize: 16,
+    padding: 20,
   },
 });
 
