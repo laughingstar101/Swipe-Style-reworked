@@ -9,6 +9,7 @@ import HistoryPage from "../screens/HistoryPage";
 import Icon from "react-native-vector-icons/AntDesign";
 import { UserContext } from "../contexts/userContext";
 import { useTheme } from "../contexts/themeContext";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFavouritesByUserId, getUserBasket } from "../utils/api";
 
 export default function App() {
@@ -28,6 +29,32 @@ export default function App() {
   const addToDislikedHistory = (item) => {
     setDislikedHistory((prev) => [item, ...prev]);
   };
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const liked = await AsyncStorage.getItem('likedHistory');
+        const disliked = await AsyncStorage.getItem('dislikedHistory');
+        if (liked) setLikedHistory(JSON.parse(liked));
+        if (disliked) setDislikedHistory(JSON.parse(disliked));
+      } catch (error) {
+        console.log('Error loading history:', error);
+      }
+    };
+    loadHistory();
+  }, []);
+
+  useEffect(() => {
+    const saveHistory = async () => {
+      try {
+        await AsyncStorage.setItem('likedHistory', JSON.stringify(likedHistory));
+        await AsyncStorage.setItem('dislikedHistory', JSON.stringify(dislikedHistory));
+      } catch (error) {
+        console.log('Error saving history:', error);
+      }
+    };
+    saveHistory();
+  }, [likedHistory, dislikedHistory]);
 
   useEffect(() => {
     getFavouritesByUserId(user)

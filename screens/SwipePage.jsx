@@ -16,9 +16,11 @@ import {
 import { useContext } from "react";
 import { UserContext } from "../contexts/userContext";
 import LoadingSpinner from "../components/LoadingSpinner.jsx";
+import { useTheme } from "../contexts/themeContext";
 
 const SwipePage = ({ setFavourites }) => {
   const { user } = useContext(UserContext);
+  const { theme } = useTheme();
   const swiperRef = createRef();
   const favAnimation = useRef(null);
   const [clothesData, setClothesData] = useState(data);
@@ -72,9 +74,9 @@ const SwipePage = ({ setFavourites }) => {
         item.color?.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredClothes(filtered);
-      // Reset index when filtering to avoid out of bounds
-      setIndex(0);
     }
+    // Reset index when filtering to avoid out of bounds
+    setIndex(0);
   }, [searchQuery, clothesData]);
 
   //this fetches the initial array of 10 items. user.uid needs passing in
@@ -318,8 +320,10 @@ const SwipePage = ({ setFavourites }) => {
 
   //added some error handling if img_url undefined
   const Card = ({ card }) => {
+    if (!card) return null;
+    
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: theme.cardBackground }]}>
         {card.item_img_url ? (
           <Image
             source={{ uri: `https://${card.item_img_url}` }}
@@ -328,15 +332,7 @@ const SwipePage = ({ setFavourites }) => {
         ) : (
           <Text style={styles.cardTitle}>Error: Image URL is undefined</Text>
         )}
-        <Text style={styles.cardTitle}>{card.title}</Text>
-        
-        {/* Share button on card */}
-        <TouchableOpacity 
-          style={styles.cardShareButton}
-          onPress={() => shareItem(card)}
-        >
-          <Ionicons name="share-social" size={24} color="#7209b7" />
-        </TouchableOpacity>
+        <Text style={[styles.cardTitle, { color: theme.text }]}>{card.title}</Text>
         
         {searchQuery !== '' && (
           <View style={styles.searchMatchBadge}>
@@ -350,6 +346,7 @@ const SwipePage = ({ setFavourites }) => {
   };
 
   const Buttons = () => {
+    const currentCard = filteredClothes[index];
     return (
       <View style={styles.icons}>
         <IconButton
@@ -381,7 +378,7 @@ const SwipePage = ({ setFavourites }) => {
           backgroundColor={colors.white}
           borderWidth={1}
           borderColor={colors.border}
-          onPress={() => shareItem(filteredClothes[index])}
+          onPress={() => shareItem(currentCard)}
         />
         <IconButton
           icon={(props) => <Icon name="heart" {...props} />}
@@ -390,7 +387,7 @@ const SwipePage = ({ setFavourites }) => {
           backgroundColor={colors.white}
           borderWidth={1}
           borderColor={colors.border}
-          onPress={() => handleAddToFavorite(filteredClothes[index])}
+          onPress={() => handleAddToFavorite(currentCard)}
         />
       </View>
     );
@@ -399,7 +396,7 @@ const SwipePage = ({ setFavourites }) => {
   return intialLoading ? (
     <LoadingSpinner />
   ) : (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* DISPLAY ERROR  */}
       {error && (
         <Text style={styles.errorText}>
@@ -410,7 +407,7 @@ const SwipePage = ({ setFavourites }) => {
       {!error && (
         <>
           {/* SEARCH BAR */}
-          <View style={styles.searchContainer}>
+          <View style={[styles.searchContainer, { backgroundColor: theme.cardBackground }]}>
             <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
@@ -428,7 +425,7 @@ const SwipePage = ({ setFavourites }) => {
 
           {/* SHOW SEARCH RESULTS COUNT */}
           {searchQuery !== '' && (
-            <Text style={styles.searchResultsText}>
+            <Text style={[styles.searchResultsText, { backgroundColor: theme.cardBackground, color: theme.textSecondary }]}>
               Found {filteredClothes.length} item{filteredClothes.length !== 1 ? 's' : ''}
             </Text>
           )}
@@ -452,7 +449,7 @@ const SwipePage = ({ setFavourites }) => {
                 stackSize={5}
                 stackSeparation={10}
                 infinite={false}
-                backgroundColor={colors.white}
+                backgroundColor={theme.background}
                 verticalSwipe={false}
                 disableBottomSwipe
                 disableTopSwipe
