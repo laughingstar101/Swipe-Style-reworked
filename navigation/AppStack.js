@@ -117,7 +117,7 @@ export default function App() {
           />
         )}
         options={{
-          tabBarIcon: () => <Icon name="clockcircleo" size={25} />,
+          tabBarIcon: () => <Icon name="clockcircleo" size={23} />,
         }}
       />
     </Tab.Navigator>

@@ -11,6 +11,7 @@ import {
   patchUserPreferences,
   getUser,
   postFavouritesByUserId,
+  getClothesList,
 } from "../utils/api.js";
 import { useContext } from "react";
 import { UserContext } from "../contexts/userContext";
@@ -40,6 +41,7 @@ const SwipePage = ({ setFavourites, addToLikedHistory, addToDislikedHistory }) =
       setIntialLoading(true);
       try {
         const clothesFromAPI = await suggestedClothes(user);
+        console.log('API Response:', clothesFromAPI.data);
         setClothesData(clothesFromAPI.data.suggestedClothes);
         setIntialLoading(false);
       } catch (err) {

@@ -14,6 +14,8 @@ export const themes = {
     buttonBg: '#6200ee',
     danger: '#dc3545',
     grey: '#808080',
+    liked: '#15eb02',
+    disliked: '#dc3545',
   },
   dark: {
     background: '#121212',
@@ -25,6 +27,8 @@ export const themes = {
     buttonBg: '#bb86fc',
     danger: '#cf6679',
     grey: '#a0a0a0',
+    liked: '#15eb02',
+    disliked: '#dc3545',
   },
 };
 

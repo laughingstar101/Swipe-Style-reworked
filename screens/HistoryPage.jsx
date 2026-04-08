@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeAreaView, ScrollView, View, Text, Image, StyleSheet } from "react-native";
 import { useTheme } from "../contexts/themeContext";
+import { Button } from "@react-native-material/core";
 
 const resolveImageUri = (uri) => {
   if (!uri) return null;
@@ -27,7 +28,7 @@ const HistoryPage = ({ likedHistory = [], dislikedHistory = [] }) => {
           <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{item.title}</Text>
           <Text style={[styles.meta, { color: theme.textSecondary }]}>Price: {item.price}</Text>
           <Text style={[styles.meta, { color: theme.textSecondary }]}>{item.category?.toUpperCase() || "Unknown"}</Text>
-          <Text style={[styles.badge, { backgroundColor: type === "liked" ? theme.primary : theme.danger, color: theme.text }]}>{type === "liked" ? "Liked" : "Disliked"}</Text>
+          <Text style={[styles.badge, { backgroundColor: type === "liked" ? theme.liked : theme.disliked, color: theme.text }]}>{type === "liked" ? "Liked" : "Disliked"}</Text>
         </View>
       </View>
     );
